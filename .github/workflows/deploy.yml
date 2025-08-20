@@ -3,7 +3,7 @@ name: Deploy React para GitHub Pages
 on:
   push:
     branches:
-      - main  # publica sempre que fizer push na branch main
+      - main  # rodar deploy sempre que fizer push na main
 
 jobs:
   build:
@@ -27,4 +27,6 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build
+          publish_branch: gh-pages    # branch que vai receber o build
+          publish_dir: ./build        # pasta do build
+          force_orphan: true          # cria branch do zero, evitando conflitos antigos
