@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/meu-app-horario/static/css/main.67fc638b.css",
-    "main.js": "/meu-app-horario/static/js/main.47a02e27.js",
+    "main.css": "/meu-app-horario/static/css/main.7e1aa3bf.css",
+    "main.js": "/meu-app-horario/static/js/main.20c98eeb.js",
     "static/js/453.ac29b269.chunk.js": "/meu-app-horario/static/js/453.ac29b269.chunk.js",
     "index.html": "/meu-app-horario/index.html",
-    "main.67fc638b.css.map": "/meu-app-horario/static/css/main.67fc638b.css.map",
-    "main.47a02e27.js.map": "/meu-app-horario/static/js/main.47a02e27.js.map",
+    "main.7e1aa3bf.css.map": "/meu-app-horario/static/css/main.7e1aa3bf.css.map",
+    "main.20c98eeb.js.map": "/meu-app-horario/static/js/main.20c98eeb.js.map",
     "453.ac29b269.chunk.js.map": "/meu-app-horario/static/js/453.ac29b269.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.67fc638b.css",
-    "static/js/main.47a02e27.js"
+    "static/css/main.7e1aa3bf.css",
+    "static/js/main.20c98eeb.js"
   ]
 }
