@@ -503,3 +503,34 @@
 .icon-sparkles {
   animation: spin 3s linear infinite;
 }
+
+/* Novo container para o cabeçalho das entradas */
+.entries-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+/* Novo botão para apagar tudo */
+.clear-all-button {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #fca5a5;
+  color: #b91c1c;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  border: 1px solid #f87171;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clear-all-button:hover {
+  background-color: #f87171;
+  color: #ffffff;
+}
+
+.icon-trash-clear {
+  margin-right: 0.5rem;
+}

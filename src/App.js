@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import './App.css'; // Importa o arquivo CSS
+import './App.css';
 
-// Importa a biblioteca Luxon globalmente para manipulação de datas e horas.
 const luxonScript = document.createElement('script');
 luxonScript.src = 'https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js';
 document.head.appendChild(luxonScript);
@@ -31,11 +30,10 @@ function App() {
     workHours: 0,
   });
 
-  // Efeito para carregar as informações do dia atual assim que o Luxon estiver disponível.
+  // Efeito para carregar as informações do dia atual e as entradas do localStorage
   useEffect(() => {
     const handleLuxonLoad = () => {
       if (window.luxon) {
-        // Define o locale para pt-BR
         window.luxon.Settings.defaultLocale = 'pt-BR';
         
         const today = window.luxon.DateTime.now();
@@ -46,6 +44,22 @@ function App() {
           workHours: workSchedule[dayOfWeek],
         });
         calculateDepartureTime();
+
+        // Carregar as entradas do localStorage
+        const savedEntries = localStorage.getItem('workEntries');
+        if (savedEntries) {
+          try {
+            const parsedEntries = JSON.parse(savedEntries).map(entry => ({
+              ...entry,
+              // Converte a string ISO de volta para um objeto Luxon
+              datetime: window.luxon.DateTime.fromISO(entry.datetime),
+            }));
+            setEntries(parsedEntries);
+          } catch (e) {
+            console.error("Failed to parse entries from localStorage", e);
+            localStorage.removeItem('workEntries');
+          }
+        }
       }
     };
     luxonScript.onload = handleLuxonLoad;
@@ -55,18 +69,28 @@ function App() {
     }
   }, [workSchedule]);
 
-  // Efeito para recalcular o horário de saída sempre que as entradas ou a jornada de trabalho mudam.
+  // Efeito para recalcular o horário de saída
   useEffect(() => {
     if (window.luxon) {
       calculateDepartureTime();
     }
   }, [entries, workSchedule]);
 
+  // Efeito para salvar as entradas no localStorage sempre que elas mudam
+  useEffect(() => {
+    // Converte os objetos Luxon para strings ISO antes de salvar
+    const entriesToSave = entries.map(entry => ({
+      ...entry,
+      datetime: entry.datetime.toISO(),
+    }));
+    localStorage.setItem('workEntries', JSON.stringify(entriesToSave));
+  }, [entries]);
+
   // Função para lidar com a entrada de horário, adicionando o ":" automaticamente.
   const handleTimeInputChange = (e) => {
-    let value = e.target.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos.
+    let value = e.target.value.replace(/\D/g, '');
     if (value.length > 4) {
-      value = value.substring(0, 4); // Limita a 4 dígitos para HHmm.
+      value = value.substring(0, 4);// Limita a 4 dígitos para HHmm.
     }
 
     if (value.length > 2) {
@@ -75,11 +99,10 @@ function App() {
     setNewEntryTime(value);
   };
   
-  // Função para lidar com a entrada de horário editado, adicionando o ":" automaticamente.
   const handleEditingTimeInputChange = (e) => {
-    let value = e.target.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos.
+    let value = e.target.value.replace(/\D/g, '');
     if (value.length > 4) {
-      value = value.substring(0, 4); // Limita a 4 dígitos para HHmm.
+      value = value.substring(0, 4);
     }
     
     if (value.length > 2) {
@@ -88,7 +111,6 @@ function App() {
     setEditingEntryValue(value);
   };
 
-  // Função para adicionar uma nova marcação de horário.
   const addEntry = (e) => {
     e.preventDefault();
     if (!newEntryTime || !/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(newEntryTime)) {
@@ -96,7 +118,6 @@ function App() {
       return;
     }
 
-    // Combina a data atual com o horário inserido.
     const now = window.luxon.DateTime.now();
     const [hours, minutes] = newEntryTime.split(':');
     const newEntry = {
@@ -113,7 +134,6 @@ function App() {
     setNewEntryTime('');
   };
 
-  // Função principal para calcular o horário de saída.
   const calculateDepartureTime = () => {
     setMessage('');
     if (entries.length < 3) {
@@ -131,7 +151,6 @@ function App() {
     }
 
     let totalWorkedMinutes = 0;
-    // Apenas itera sobre pares completos de entradas
     const numPairs = Math.floor(entries.length / 2);
     for (let i = 0; i < numPairs * 2; i += 2) {
       const entry = entries[i];
@@ -150,7 +169,7 @@ function App() {
     // Calcula os minutos restantes com base na jornada de trabalho
     const targetMinutes = targetWorkHours * 60;
     const remainingMinutes = targetMinutes - totalWorkedMinutes;
-
+   
     // Garante que o valor de minutos restantes é um número válido antes de usá-lo.
     if (isNaN(remainingMinutes) || !Number.isFinite(remainingMinutes)) {
       setDepartureTime('Erro: Cálculo de tempo inválido.');
@@ -177,13 +196,17 @@ function App() {
     setMessage('Marcação removida.');
   };
 
-  // Função para iniciar a edição de uma marcação.
+  // Nova função para apagar todas as entradas
+  const clearAllEntries = () => {
+    setEntries([]);
+    setMessage('Todas as marcações foram removidas.');
+  };
+
   const startEditingEntry = (entry) => {
     setEditingEntryId(entry.id);
     setEditingEntryValue(entry.datetime.toFormat('HH:mm'));
   };
 
-  // Função para salvar a edição de uma marcação.
   const saveEditedEntry = (id) => {
     if (!editingEntryValue || !/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(editingEntryValue)) {
       setMessage('Por favor, insira um horário válido no formato HH:mm.');
@@ -203,19 +226,16 @@ function App() {
     setMessage('Marcação atualizada com sucesso!');
   };
 
-  // Função para cancelar a edição de uma marcação.
   const cancelEditingEntry = () => {
     setEditingEntryId(null);
   };
 
-  // Função para salvar a jornada de trabalho editada.
   const saveSchedule = () => {
     setWorkSchedule(editingSchedule);
     setIsEditingSchedule(false);
     setMessage('Jornada de trabalho atualizada!');
   };
 
-  // Mapeia o dia da semana em inglês para o nome em português.
   const getDayName = (day) => {
     const days = {
       monday: 'Segunda-feira',
@@ -229,18 +249,14 @@ function App() {
     return days[day] || day;
   };
 
-  // Renderiza a interface do usuário.
   return (
     <div className="app-container">
       <div className="card">
-        {/* Título do aplicativo */}
         <h1 className="main-title">
-          {/* Ícone de relógio em SVG */}
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-clock"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           Calculadora de Saída
         </h1>
 
-        {/* Seção de destaque para o dia atual */}
         <div className="daily-info-card">
             <div className="daily-info-item">
                 <p className="daily-info-day">{currentDayInfo.dayName}</p>
@@ -252,7 +268,6 @@ function App() {
             </div>
         </div>
 
-        {/* Seção de Jornada de Trabalho (expansível) */}
         <div className="schedule-section">
           <div className="schedule-header" onClick={() => setIsScheduleVisible(!isScheduleVisible)}>
             <h2 className="section-title">Jornada de Trabalho</h2>
@@ -260,19 +275,17 @@ function App() {
                 {!isEditingSchedule && (
                   <button
                     onClick={(e) => {
-                      e.stopPropagation(); // Evita o toggle da expansão
+                      e.stopPropagation();
                       setIsEditingSchedule(true);
                       setEditingSchedule(workSchedule);
-                      setIsScheduleVisible(true); // Garante que a seção esteja aberta para edição
+                      setIsScheduleVisible(true);
                     }}
                     className="edit-button"
                     aria-label="Editar jornada de trabalho"
                   >
-                    {/* Ícone de lápis em SVG */}
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                   </button>
                 )}
-                {/* Ícone de seta para baixo/cima */}
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`icon-chevron-down ${isScheduleVisible ? 'icon-rotated' : ''}`}><path d="m6 9 6 6 6-6"/></svg>
             </div>
           </div>
@@ -304,7 +317,6 @@ function App() {
                     onClick={saveSchedule}
                     className="save-button"
                   >
-                    {/* Ícone de check em SVG */}
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-check"><path d="M20 6 9 17l-5-5"/></svg>
                     Salvar
                   </button>
@@ -312,7 +324,6 @@ function App() {
                     onClick={() => setIsEditingSchedule(false)}
                     className="cancel-button"
                   >
-                    {/* Ícone de X em SVG */}
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                     Cancelar
                   </button>
@@ -322,7 +333,6 @@ function App() {
           )}
         </div>
 
-        {/* Formulário para adicionar uma nova marcação. Agora com input de texto para o horário. */}
           <form onSubmit={addEntry} className="entry-form">
             <div className="form-group">
               <div className="input-group">
@@ -339,7 +349,6 @@ function App() {
             required
             style={{ width: '60px' }}
                 />
-                {/* Ícone de calendário em SVG */}
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-calendar"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M12 21v-4"/><path d="M12 17v-4"/><path d="M8 17v-4"/><path d="M16 17v-4"/></svg>
               </div>
               <div className="button-group">
@@ -347,7 +356,6 @@ function App() {
             type="submit"
             className="add-button"
                 >
-            {/* Ícone de mais em SVG */}
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
             Adicionar Marcação
                 </button>
@@ -361,68 +369,77 @@ function App() {
             </div>
           )}
 
-          {/* Lista de marcações registradas */}
-        <div className="entries-section">
-          <h2 className="section-title">Marcações Registradas ({entries.length})</h2>
-          {entries.length === 0 ? (
-            <p className="no-entries">Nenhuma marcação adicionada ainda.</p>
-          ) : (
-            <div className="entries-list">
-              {entries.map((entry) => (
-                <div
-                  key={entry.id}
-                  className="entry-item"
+          <div className="entries-section">
+            <div className="entries-header">
+              <h2 className="section-title">Marcações Registradas ({entries.length})</h2>
+              {entries.length > 0 && (
+                <button
+                  onClick={clearAllEntries}
+                  className="clear-all-button"
+                  aria-label="Limpar todas as marcações"
                 >
-                  {editingEntryId === entry.id ? (
-                    <div className="entry-edit-mode">
-                      <input
-                        type="text"
-                        pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
-                        placeholder="HH:mm"
-                        maxLength="5"
-                        value={editingEntryValue}
-                        onChange={handleEditingTimeInputChange}
-                        className="edit-input"
-                      />
-                      <button onClick={() => saveEditedEntry(entry.id)} className="edit-save-button" aria-label="Salvar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-check"><path d="M20 6 9 17l-5-5"/></svg></button>
-                      <button onClick={cancelEditingEntry} className="edit-cancel-button" aria-label="Cancelar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="entry-details">
-                        <span className="entry-date">
-                          {/* Exibe a data e a hora da marcação */}
-                          {entry.datetime.toFormat('dd/MM/yyyy')}
-                        </span>
-                        <span className="entry-time">
-                          {entry.datetime.toFormat('HH:mm')}
-                        </span>
-                      </div>
-                      <div className="entry-actions">
-                        <button
-                          onClick={() => startEditingEntry(entry)}
-                          className="edit-button"
-                          aria-label="Editar marcação"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                        </button>
-                        <button
-                          onClick={() => removeEntry(entry.id)}
-                          className="remove-button"
-                          aria-label="Remover marcação"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-trash"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-trash-clear"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                  Limpar Tudo
+                </button>
+              )}
             </div>
-          )}
-        </div>
+            {entries.length === 0 ? (
+              <p className="no-entries">Nenhuma marcação adicionada ainda.</p>
+            ) : (
+              <div className="entries-list">
+                {entries.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="entry-item"
+                  >
+                    {editingEntryId === entry.id ? (
+                      <div className="entry-edit-mode">
+                        <input
+                          type="text"
+                          pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
+                          placeholder="HH:mm"
+                          maxLength="5"
+                          value={editingEntryValue}
+                          onChange={handleEditingTimeInputChange}
+                          className="edit-input"
+                        />
+                        <button onClick={() => saveEditedEntry(entry.id)} className="edit-save-button" aria-label="Salvar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-check"><path d="M20 6 9 17l-5-5"/></svg></button>
+                        <button onClick={cancelEditingEntry} className="edit-cancel-button" aria-label="Cancelar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="entry-details">
+                          <span className="entry-date">
+                            {entry.datetime.toFormat('dd/MM/yyyy')}
+                          </span>
+                          <span className="entry-time">
+                            {entry.datetime.toFormat('HH:mm')}
+                          </span>
+                        </div>
+                        <div className="entry-actions">
+                          <button
+                            onClick={() => startEditingEntry(entry)}
+                            className="edit-button"
+                            aria-label="Editar marcação"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                          </button>
+                          <button
+                            onClick={() => removeEntry(entry.id)}
+                            className="remove-button"
+                            aria-label="Remover marcação"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-trash"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-        {/* Seção de horário de saída calculado */}
         <div className="departure-section">
           <h2 className="departure-title">
             Horário de Saída
