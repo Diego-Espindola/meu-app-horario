@@ -317,14 +317,23 @@
 
 /* Mensagem de Feedback */
 .message {
-  background-color: #d1fae5;
-  border: 1px solid #a7f3d0;
-  color: #065f46;
   padding: 0.5rem 1rem;
   border-radius: 0.75rem;
   text-align: center;
   margin-bottom: 1.5rem;
   transition: opacity 0.3s;
+}
+
+.message.success {
+  background-color: #d1fae5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.message.error {
+  background-color: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
 }
 
 /* Lista de Marcações */
@@ -433,12 +442,96 @@
   border-top: 2px dashed #d1d5db;
 }
 
+.departure-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
 .departure-title {
   font-size: 1.5rem;
   font-weight: 700;
   text-align: center;
   color: #3730a3;
+  margin: 0;
+}
+
+.remaining-check-button {
+  background-color: #4f46e5;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.remaining-check-button:hover {
+  background-color: #4338ca;
+}
+
+.remaining-timer-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #3730a3;
+  margin: 0 0 1.25rem;
+}
+
+.remaining-modal-close {
+  width: 100%;
+}
+
+.early-exit-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
   margin-bottom: 1rem;
+}
+
+.early-exit-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  color: #3730a3;
+}
+
+.early-exit-option input {
+  margin-top: 0.2rem;
+  accent-color: #4f46e5;
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+}
+
+.early-exit-option span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.early-exit-option strong {
+  font-size: 0.95rem;
+}
+
+.early-exit-option small {
+  font-size: 0.8rem;
+  color: #4338ca;
+}
+
+.early-exit-option.is-selected {
+  background-color: #e0e7ff;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 1px #4f46e5;
 }
 
 .departure-card {
@@ -459,6 +552,12 @@
   font-size: 2.25rem;
   font-weight: 800;
   margin-top: 0.25rem;
+}
+
+.departure-status {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.4;
 }
 
 .departure-placeholder {
@@ -533,4 +632,42 @@
 
 .icon-trash-clear {
   margin-right: 0.5rem;
+}
+
+.new-day-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 50;
+}
+
+.new-day-modal {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 1.75rem;
+  max-width: 24rem;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+}
+
+.new-day-modal h2 {
+  margin: 0 0 0.75rem;
+  color: #3730a3;
+  font-size: 1.5rem;
+}
+
+.new-day-modal p {
+  margin: 0 0 1.5rem;
+  color: #4338ca;
+  line-height: 1.5;
+}
+
+.new-day-modal-button {
+  justify-content: center;
+  width: 100%;
 }
