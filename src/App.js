@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 import SalaryCalculatorModal from './SalaryCalculatorModal';
 
@@ -238,7 +238,7 @@ function App() {
     };
   }, [isLuxonReady, nowTick]);
 
-  const calculateDepartureTime = () => {
+  const calculateDepartureTime = useCallback(() => {
     if (!window.luxon) {
       return;
     }
@@ -301,14 +301,14 @@ function App() {
     }
     const departure = lastEntryTime.plus({ minutes: remainingMinutes });
     setDepartureTime(departure.toFormat('HH:mm'));
-  };
+  }, [entries, workSchedule, earlyExitOption]);
 
   useEffect(() => {
     if (!isLuxonReady || !areEntriesHydrated) {
       return;
     }
     calculateDepartureTime();
-  }, [entries, workSchedule, earlyExitOption, isLuxonReady, areEntriesHydrated]);
+  }, [entries, workSchedule, earlyExitOption, isLuxonReady, areEntriesHydrated, calculateDepartureTime]);
 
   useEffect(() => {
     if (!areEntriesHydrated) {
@@ -343,19 +343,19 @@ function App() {
     };
   }, [entries, isLuxonReady, nowTick]);
 
-  const stopRemainingTimer = () => {
+  const stopRemainingTimer = useCallback(() => {
     if (remainingTimerRef.current !== null) {
       window.clearInterval(remainingTimerRef.current);
       remainingTimerRef.current = null;
     }
-  };
+  }, []);
 
-  const closeRemainingModal = () => {
+  const closeRemainingModal = useCallback(() => {
     stopRemainingTimer();
     setIsRemainingModalOpen(false);
     setRemainingDeadlineMs(null);
     setRemainingSecondsLeft(null);
-  };
+  }, [stopRemainingTimer]);
 
   useEffect(() => {
     stopRemainingTimer();
@@ -378,7 +378,7 @@ function App() {
       remainingTimerRef.current = window.setInterval(tick, 1000);
     }
     return stopRemainingTimer;
-  }, [isRemainingModalOpen, remainingDeadlineMs]);
+  }, [isRemainingModalOpen, remainingDeadlineMs, stopRemainingTimer]);
 
   useEffect(() => {
     if (!isRemainingModalOpen) {
@@ -393,7 +393,7 @@ function App() {
     return () => {
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [isRemainingModalOpen]);
+  }, [isRemainingModalOpen, closeRemainingModal]);
 
   useEffect(() => {
     if (!isRemainingModalOpen || !window.luxon) {
@@ -407,7 +407,7 @@ function App() {
     if (todayEntries.length < 3 || hasStaleEntries) {
       closeRemainingModal();
     }
-  }, [entries, isRemainingModalOpen, nowTick]);
+  }, [entries, isRemainingModalOpen, nowTick, closeRemainingModal]);
 
   const handleTimeInputChange = (e) => {
     setNewEntryTime(formatTimeInput(e.target.value));
@@ -775,7 +775,7 @@ function App() {
                 onChange={() => toggleEarlyExitOption('hourEarly')}
               />
               <span>
-                <strong>Sair uma hora mais cedo</strong>
+                <strong>Não perder o bônus</strong>
                 <small>Retira 59 minutos do horário de saída</small>
               </span>
             </label>
