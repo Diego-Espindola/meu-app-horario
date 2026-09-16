@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import './App.css';
+import SalaryCalculatorModal from './SalaryCalculatorModal';
 
 const luxonScript = document.createElement('script');
 luxonScript.src = 'https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js';
@@ -155,6 +156,7 @@ function App() {
   });
   const [earlyExitOption, setEarlyExitOption] = useState(null);
   const [isRemainingModalOpen, setIsRemainingModalOpen] = useState(false);
+  const [isSalaryModalOpen, setIsSalaryModalOpen] = useState(false);
   const [remainingDeadlineMs, setRemainingDeadlineMs] = useState(null);
   const [remainingSecondsLeft, setRemainingSecondsLeft] = useState(null);
   const [areEntriesHydrated, setAreEntriesHydrated] = useState(false);
@@ -562,6 +564,13 @@ function App() {
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-clock"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           Calculadora de Saída
         </h1>
+        <button
+          type="button"
+          className="salary-open-button"
+          onClick={() => setIsSalaryModalOpen(true)}
+        >
+          Calcular salário
+        </button>
 
         <div className="daily-info-card">
             <div className="daily-info-item">
@@ -829,6 +838,10 @@ function App() {
           </div>
         </div>
       )}
+      <SalaryCalculatorModal
+        isOpen={isSalaryModalOpen}
+        onClose={() => setIsSalaryModalOpen(false)}
+      />
       {hasPreviousDayEntries && (
         <div className="new-day-modal-overlay" role="presentation">
           <div
