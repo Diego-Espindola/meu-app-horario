@@ -1,4 +1,5 @@
 export const SALARY_STORAGE_KEY = 'salaryCalculator';
+export const SALARY_VALUES_VISIBLE_KEY = 'salaryValuesVisible';
 
 export const DEFAULT_SALARY_INPUTS = {
   salario: '',
@@ -148,4 +149,21 @@ export const saveSalaryCalculatorState = (inputs, results) => {
     SALARY_STORAGE_KEY,
     JSON.stringify({ inputs, results })
   );
+};
+
+export const loadSalaryValuesVisible = () => {
+  try {
+    const saved = localStorage.getItem(SALARY_VALUES_VISIBLE_KEY);
+    if (saved === null) {
+      return true;
+    }
+    return saved === 'true';
+  } catch (error) {
+    console.error('Failed to read salary visibility from localStorage', error);
+    return true;
+  }
+};
+
+export const saveSalaryValuesVisible = (visible) => {
+  localStorage.setItem(SALARY_VALUES_VISIBLE_KEY, String(Boolean(visible)));
 };

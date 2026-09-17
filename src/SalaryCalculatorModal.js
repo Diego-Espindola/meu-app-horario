@@ -4,8 +4,12 @@ import {
   formatCurrency,
   formatDurationInput,
   loadSalaryCalculatorState,
+  loadSalaryValuesVisible,
   saveSalaryCalculatorState,
+  saveSalaryValuesVisible,
 } from './salaryCalculator';
+
+const MASKED_VALUE = '••••••';
 
 const DURATION_FIELDS = new Set([
   'he50',
@@ -18,6 +22,7 @@ const DURATION_FIELDS = new Set([
 function SalaryCalculatorModal({ isOpen, onClose }) {
   const [inputs, setInputs] = useState(loadSalaryCalculatorState().inputs);
   const [results, setResults] = useState(loadSalaryCalculatorState().results);
+  const [valuesVisible, setValuesVisible] = useState(loadSalaryValuesVisible);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -28,6 +33,7 @@ function SalaryCalculatorModal({ isOpen, onClose }) {
     const saved = loadSalaryCalculatorState();
     setInputs(saved.inputs);
     setResults(saved.results);
+    setValuesVisible(loadSalaryValuesVisible());
     setError('');
 
     const handleKeyDown = (event) => {
@@ -63,6 +69,16 @@ function SalaryCalculatorModal({ isOpen, onClose }) {
     saveSalaryCalculatorState(inputs, nextResults);
   };
 
+  const toggleValuesVisible = () => {
+    setValuesVisible((current) => {
+      const nextVisible = !current;
+      saveSalaryValuesVisible(nextVisible);
+      return nextVisible;
+    });
+  };
+
+  const displayCurrency = (value) => (valuesVisible ? formatCurrency(value) : MASKED_VALUE);
+
   const resultItems = results
     ? [
         ['Valor da hora', results.valorHora],
@@ -87,6 +103,28 @@ function SalaryCalculatorModal({ isOpen, onClose }) {
         onClick={(event) => event.stopPropagation()}
       >
         <div className="salary-modal-header">
+          <button
+            type="button"
+            className="salary-visibility-toggle"
+            onClick={toggleValuesVisible}
+            aria-pressed={valuesVisible}
+            aria-label={valuesVisible ? 'Ocultar valores' : 'Mostrar valores'}
+            title={valuesVisible ? 'Ocultar valores' : 'Mostrar valores'}
+          >
+            {valuesVisible ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 11 7 11 7a13.16 13.16 0 0 1-1.67 2.68" />
+                <path d="M6.61 6.61A13.526 13.526 0 0 0 1 12s4 7 11 7a9.74 9.74 0 0 0 5.39-1.61" />
+                <line x1="2" x2="22" y1="2" y2="22" />
+              </svg>
+            )}
+          </button>
           <h2 id="salary-modal-title">Cálculo de salário</h2>
           <button type="button" className="salary-modal-close" onClick={onClose} aria-label="Fechar">
             ×
@@ -98,11 +136,13 @@ function SalaryCalculatorModal({ isOpen, onClose }) {
             <label>
               Salário
               <input
-                type="text"
+                type={valuesVisible ? 'text' : 'password'}
                 inputMode="decimal"
+                autoComplete="off"
                 value={inputs.salario}
                 onChange={handleChange('salario')}
-                placeholder="4004"
+                placeholder="ex: 4004"
+                className={valuesVisible ? undefined : 'salary-value-hidden'}
               />
             </label>
             <label>
@@ -112,7 +152,7 @@ function SalaryCalculatorModal({ isOpen, onClose }) {
                 inputMode="decimal"
                 value={inputs.horasMensais}
                 onChange={handleChange('horasMensais')}
-                placeholder="220"
+                placeholder="ex: 220"
               />
             </label>
             <label>
@@ -123,7 +163,7 @@ function SalaryCalculatorModal({ isOpen, onClose }) {
                 maxLength="5"
                 value={inputs.he50}
                 onChange={handleChange('he50')}
-                placeholder="5:25"
+                placeholder="ex: 5:25"
               />
             </label>
             <label>
@@ -134,7 +174,7 @@ function SalaryCalculatorModal({ isOpen, onClose }) {
                 maxLength="5"
                 value={inputs.he100}
                 onChange={handleChange('he100')}
-                placeholder="0:00"
+                placeholder="ex: 0:00"
               />
             </label>
             <label>
@@ -145,7 +185,7 @@ function SalaryCalculatorModal({ isOpen, onClose }) {
                 maxLength="5"
                 value={inputs.horasFaltas}
                 onChange={handleChange('horasFaltas')}
-                placeholder="0:00"
+                placeholder="ex: 0:00"
               />
             </label>
             <label>
@@ -156,7 +196,7 @@ function SalaryCalculatorModal({ isOpen, onClose }) {
                 maxLength="5"
                 value={inputs.he50Noturna}
                 onChange={handleChange('he50Noturna')}
-                placeholder="0:00"
+                placeholder="ex: 0:00"
               />
             </label>
             <label>
@@ -167,7 +207,7 @@ function SalaryCalculatorModal({ isOpen, onClose }) {
                 maxLength="5"
                 value={inputs.he100Noturna}
                 onChange={handleChange('he100Noturna')}
-                placeholder="0:00"
+                placeholder="ex: 0:00"
               />
             </label>
             <label>
@@ -177,7 +217,7 @@ function SalaryCalculatorModal({ isOpen, onClose }) {
                 inputMode="numeric"
                 value={inputs.diasUteis}
                 onChange={handleChange('diasUteis')}
-                placeholder="22"
+                placeholder="ex: 22"
               />
             </label>
             <label>
@@ -187,7 +227,7 @@ function SalaryCalculatorModal({ isOpen, onClose }) {
                 inputMode="numeric"
                 value={inputs.dsr}
                 onChange={handleChange('dsr')}
-                placeholder="4"
+                placeholder="ex: 4"
               />
             </label>
           </div>
@@ -201,8 +241,8 @@ function SalaryCalculatorModal({ isOpen, onClose }) {
 
         <div className="salary-gross">
           <p className="salary-gross-label">Salário Bruto</p>
-          <p className="salary-gross-value">
-            {results ? formatCurrency(results.salarioBruto) : '—'}
+          <p className={`salary-gross-value${valuesVisible ? '' : ' salary-value-masked'}`}>
+            {results ? displayCurrency(results.salarioBruto) : '—'}
           </p>
         </div>
 
@@ -211,7 +251,9 @@ function SalaryCalculatorModal({ isOpen, onClose }) {
             {resultItems.map(([label, value]) => (
               <div key={label} className="salary-result-item">
                 <dt>{label}</dt>
-                <dd>{formatCurrency(value)}</dd>
+                <dd className={valuesVisible ? undefined : 'salary-value-masked'}>
+                  {displayCurrency(value)}
+                </dd>
               </div>
             ))}
           </dl>

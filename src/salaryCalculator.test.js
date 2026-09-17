@@ -1,4 +1,9 @@
-import { calculateSalary } from './salaryCalculator';
+import {
+  calculateSalary,
+  loadSalaryValuesVisible,
+  saveSalaryValuesVisible,
+  SALARY_VALUES_VISIBLE_KEY,
+} from './salaryCalculator';
 
 test('matches the spreadsheet formulas for the March/April sample', () => {
   const results = calculateSalary({
@@ -23,4 +28,17 @@ test('matches the spreadsheet formulas for the March/April sample', () => {
   expect(results.heMaisDsr).toBeCloseTo(976.068888888888, 6);
   expect(results.totalGeral).toBeCloseTo(958.172222222222, 6);
   expect(results.salarioBruto).toBeCloseTo(4962.17222222222, 6);
+});
+
+test('persists salary values visibility in localStorage as true or false', () => {
+  localStorage.removeItem(SALARY_VALUES_VISIBLE_KEY);
+  expect(loadSalaryValuesVisible()).toBe(true);
+
+  saveSalaryValuesVisible(false);
+  expect(localStorage.getItem(SALARY_VALUES_VISIBLE_KEY)).toBe('false');
+  expect(loadSalaryValuesVisible()).toBe(false);
+
+  saveSalaryValuesVisible(true);
+  expect(localStorage.getItem(SALARY_VALUES_VISIBLE_KEY)).toBe('true');
+  expect(loadSalaryValuesVisible()).toBe(true);
 });

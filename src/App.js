@@ -656,7 +656,7 @@ function App() {
             id="new-entry"
             type="text"
             pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
-            placeholder="HH:mm"
+            placeholder="ex: HH:mm"
             maxLength="5"
             value={newEntryTime}
             onChange={handleTimeInputChange}
@@ -712,7 +712,7 @@ function App() {
                         <input
                           type="text"
                           pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
-                          placeholder="HH:mm"
+                          placeholder="ex: HH:mm"
                           maxLength="5"
                           value={editingEntryValue}
                           onChange={handleEditingTimeInputChange}
